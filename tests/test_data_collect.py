@@ -23,7 +23,7 @@ import textwrap
 from .conftest import cmdline_script_root
 from foris_controller_testtools.fixtures import (
     infrastructure, uci_configs_init, ubusd_test, init_script_result, lock_backend,
-    only_backends, updater_userlists, FILE_ROOT_PATH
+    only_backends, FILE_ROOT_PATH
 )
 from foris_controller_testtools.utils import check_service_result, get_uci_module, FileFaker
 
@@ -132,7 +132,7 @@ def test_get(uci_configs_init, infrastructure, ubusd_test):
     assert "agreed" in res["data"].keys()
 
 
-def test_set(updater_userlists, infrastructure, ubusd_test):
+def test_set(infrastructure, ubusd_test):
     def set_agreed(agreed):
         filters = [("data_collect", "set")]
         old_notifications = infrastructure.get_notifications(filters=filters)
@@ -181,10 +181,8 @@ def test_set(updater_userlists, infrastructure, ubusd_test):
 
 @pytest.mark.only_backends(['openwrt'])
 def test_set_openwrt(
-    updater_userlists, uci_configs_init, init_script_result, infrastructure, ubusd_test
+    uci_configs_init, init_script_result, infrastructure, ubusd_test
 ):
-    filters = [("data_collect", "set"), ("updater", "run")]
-    notifications = infrastructure.get_notifications(filters=filters)
     res = infrastructure.process_message({
         "module": "data_collect",
         "action": "set",
@@ -314,7 +312,7 @@ def test_set_honeypots_service_restart(
 
 @pytest.mark.only_backends(['openwrt'])
 def test_set_agreed_uci(
-    updater_userlists, uci_configs_init, lock_backend, init_script_result, infrastructure,
+    uci_configs_init, lock_backend, init_script_result, infrastructure,
     ubusd_test
 ):
     uci = get_uci_module(lock_backend)
