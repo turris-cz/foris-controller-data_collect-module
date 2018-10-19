@@ -23,7 +23,7 @@ from foris_controller.handler_base import BaseOpenwrtHandler
 from foris_controller.utils import logger_wrapper
 
 from foris_controller_backends.data_collect import (
-    RegisteredCmds, DataCollectUci
+    RegisteredCmds, DataCollectUci, SendingFiles,
 )
 
 from .. import Handler
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class OpenwrtDataCollectHandler(Handler, BaseOpenwrtHandler):
 
+    sending_files = SendingFiles()
     registered_cmds = RegisteredCmds()
     uci = DataCollectUci()
 
@@ -85,3 +86,12 @@ class OpenwrtDataCollectHandler(Handler, BaseOpenwrtHandler):
         :rtype: boolean
         """
         return self.uci.set_honeypots(honepot_settings)
+
+    @logger_wrapper(logger)
+    def get_sending_info(self):
+        """ Obtains info whether the router is sending data to our servers
+
+        :returns: result
+        :rtype: dict
+        """
+        return self.sending_files.get_sending_info()

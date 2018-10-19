@@ -18,14 +18,20 @@
 #
 
 import re
+import logging
 
+from foris_controller.app import app_info
 from foris_controller.exceptions import BackendCommandFailed
-
 from foris_controller_backends.cmdline import BaseCmdLine
+from foris_controller_backends.files import BaseFile
 from foris_controller_backends.services import OpenwrtServices
 from foris_controller_backends.uci import (
     UciBackend, UciRecordNotFound, parse_bool, get_option_named, store_bool
 )
+from foris_controller.utils import readlock, RWLock
+
+
+logger = logging.getLogger(__name__)
 
 
 class RegisteredCmds(BaseCmdLine):
@@ -159,3 +165,54 @@ class DataCollectUci(object):
             services.restart("ucollect")
 
         return True
+
+
+class SendingFiles(BaseFile):
+    FW_PATH = "/tmp/firewall-turris-status.txt"
+    UC_PATH = "/tmp/ucollect-status"
+    file_lock = RWLock(app_info["lock_backend"])
+    STATE_ONLINE = "online"
+    STATE_OFFLINE = "offline"
+    STATE_UNKNOWN = "unknown"
+
+    @readlock(file_lock, logger)
+    def get_sending_info(self):
+        """ Returns sending info
+
+        :returns: sending info
+        :rtype: dict
+        """
+        result = {
+            'firewall_status': {"state": SendingFiles.STATE_UNKNOWN, "last_check": 0},
+            'ucollect_status': {"state": SendingFiles.STATE_UNKNOWN, "last_check": 0},
+        }
+        try:
+            content = self._file_content(SendingFiles.FW_PATH)
+            if re.search(r"turris firewall working: yes", content):
+                result['firewall_status']["state"] = SendingFiles.STATE_ONLINE
+            else:
+                result['firewall_status']["state"] = SendingFiles.STATE_OFFLINE
+            match = re.search(r"last working timestamp: ([0-9]+)", content)
+            if match:
+                result['firewall_status']["last_check"] = int(match.group(1))
+        except IOError:
+            # file doesn't probably exists yet
+            logger.warning("Failed to read file '%s'." % SendingFiles.FW_PATH)
+
+        try:
+            content = self._file_content(SendingFiles.UC_PATH)
+            match = re.search(r"^(\w+)\s+([0-9]+)$", content)
+            if not match:
+                logger.error("Wrong format of file '%s'." % SendingFiles.UC_PATH)
+            else:
+                if match.group(1) == "online":
+                    result['ucollect_status']["state"] = SendingFiles.STATE_ONLINE
+                else:
+                    result['ucollect_status']["state"] = SendingFiles.STATE_OFFLINE
+                result['ucollect_status']["last_check"] = int(match.group(2))
+
+        except IOError:
+            # file doesn't probably exists yet
+            logger.warning("Failed to read file '%s'." % SendingFiles.UC_PATH)
+
+        return result

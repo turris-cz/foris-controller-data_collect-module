@@ -129,7 +129,7 @@ def test_get(uci_configs_init, infrastructure, ubusd_test):
         "action": "get",
         "kind": "request"
     })
-    assert "agreed" in res["data"].keys()
+    assert set(res["data"]) == {"agreed", "firewall_status", "ucollect_status"}
 
 
 def test_set(infrastructure, ubusd_test):
@@ -164,14 +164,7 @@ def test_set(infrastructure, ubusd_test):
             "action": "get",
             "kind": "request"
         })
-        assert res == {
-            u"module": u"data_collect",
-            u"action": u"get",
-            u"kind": u"reply",
-            u"data": {
-                u"agreed": agreed,
-            }
-        }
+        assert res["data"]["agreed"] is agreed
 
     set_agreed(True)
     set_agreed(False)

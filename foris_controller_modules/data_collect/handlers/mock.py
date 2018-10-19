@@ -86,6 +86,20 @@ class MockDataCollectHandler(Handler, BaseMockHandler):
         return self.agreed
 
     @logger_wrapper(logger)
+    def get_sending_info(self):
+        """ Returns fake sending status
+
+        :returns: Mocked result
+        :rtype: dict
+        """
+        choices = ["online", "offline", "unknown"]
+        return {
+            "firewall_status": {"state": random.choice(choices), "last_check": 1501857960},
+            "ucollect_status": {"state": random.choice(choices), "last_check": 1501857970},
+        }
+
+
+    @logger_wrapper(logger)
     def set_agreed(self, agreed):
         """ Mock setting information whether the user agreed with data collect
         :returns: True

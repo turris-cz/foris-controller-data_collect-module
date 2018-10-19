@@ -1,5 +1,14 @@
 {
     "definitions": {
+        "sending_status": {
+            "type": "object",
+            "properties": {
+                "state": {"enum": ["online", "offline", "unknown"]},
+                "last_check": {"type": "number"}
+            },
+            "additionalProperties": false,
+            "required": ["state", "last_check"]
+        },
         "minipots": {
             "type": "object",
             "properties": {
@@ -86,10 +95,12 @@
                 "data": {
                     "type": "object",
                     "properties": {
-                        "agreed": {"type": "boolean"}
+                        "agreed": {"type": "boolean"},
+                        "firewall_status": {"$ref": "#/definitions/sending_status"},
+                        "ucollect_status": {"$ref": "#/definitions/sending_status"}
                     },
                     "additionalProperties": false,
-                    "required": ["agreed"]
+                    "required": ["agreed", "firewall_status", "ucollect_status"]
                 }
             },
             "additionalProperties": false,

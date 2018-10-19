@@ -42,7 +42,9 @@ class DataCollectModule(BaseModule):
         :returns: info about data collecting
         :rtype: dict
         """
-        return {"agreed": self.handler.get_agreed()}
+        res = {"agreed": self.handler.get_agreed()}
+        res.update(self.handler.get_sending_info())
+        return res
 
     def action_set(self, data):
         """ Update configuration of data collect
@@ -84,6 +86,7 @@ class DataCollectModule(BaseModule):
     'set_agreed',
     'get_honeypots',
     'set_honeypots',
+    'get_sending_info',
 ])
 class Handler(object):
     pass
