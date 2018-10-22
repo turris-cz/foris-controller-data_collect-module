@@ -132,7 +132,7 @@ def test_get(uci_configs_init, infrastructure, ubusd_test):
     assert set(res["data"]) == {"agreed", "firewall_status", "ucollect_status"}
 
 
-def test_set(infrastructure, ubusd_test):
+def test_set(uci_configs_init, init_script_result, infrastructure, ubusd_test):
     def set_agreed(agreed):
         filters = [("data_collect", "set")]
         old_notifications = infrastructure.get_notifications(filters=filters)
@@ -190,7 +190,25 @@ def test_set_openwrt(
         u'kind': u'reply',
         u'module': u'data_collect'
     }
-    check_service_result("ucollect", True, "restart")
+    check_service_result("ucollect", "enable", clean=False)
+    check_service_result("ucollect", "restart")
+
+    res = infrastructure.process_message({
+        "module": "data_collect",
+        "action": "set",
+        "kind": "request",
+        "data": {
+            "agreed": False
+        }
+    })
+    assert res == {
+        u'action': u'set',
+        u'data': {u'result': True},
+        u'kind': u'reply',
+        u'module': u'data_collect'
+    }
+    check_service_result("ucollect", "disable", clean=False)
+    check_service_result("ucollect", "stop")
 
 
 def test_get_honeypots(infrastructure, ubusd_test):
@@ -300,7 +318,7 @@ def test_set_honeypots_service_restart(
         u'kind': u'reply',
         u'module': u'data_collect'
     }
-    check_service_result("ucollect", True, "restart")
+    check_service_result("ucollect", "restart", True)
 
 
 @pytest.mark.only_backends(['openwrt'])

@@ -117,8 +117,12 @@ class DataCollectUci(object):
             backend.set_option("foris", "eula", "agreed_collect", store_bool(agreed))
 
         with OpenwrtServices() as services:
-            # fail_on_error=False - ucollect might not be installed yet
-            services.restart("ucollect", fail_on_error=False)
+            if agreed:
+                services.enable("ucollect")
+                services.restart("ucollect")
+            else:
+                services.disable("ucollect")
+                services.stop("ucollect")
 
         return True
 

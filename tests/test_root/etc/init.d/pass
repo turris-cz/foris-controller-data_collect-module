@@ -1,5 +1,5 @@
 #!/bin/sh
 set -e
-echo passed $1 > /tmp/test_init/$(basename $0)
+echo passed $1 >> /tmp/test_init/$(basename $0)
 echo PASS
 exit 0
