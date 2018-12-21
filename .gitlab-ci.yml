@@ -11,8 +11,7 @@ stages:
 
     - pip install .
 
-    - python setup.py test
-    - python setup.py test --addopts="--backend openwrt"
+    - python setup.py test --addopts="--backend openwrt --backend mock"
 
 test_python2:
   image: registry.labs.nic.cz/turris/foris-ci/python2

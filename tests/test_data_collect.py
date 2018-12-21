@@ -22,8 +22,8 @@ import textwrap
 
 from .conftest import cmdline_script_root
 from foris_controller_testtools.fixtures import (
-    infrastructure, uci_configs_init, ubusd_test, init_script_result, lock_backend,
-    only_backends, FILE_ROOT_PATH
+    infrastructure, uci_configs_init, start_buses, mosquitto_test, ubusd_test, init_script_result,
+    lock_backend, only_backends, FILE_ROOT_PATH, UCI_CONFIG_DIR_PATH
 )
 from foris_controller_testtools.utils import check_service_result, get_uci_module, FileFaker
 
@@ -69,7 +69,7 @@ def registration_code(request):
 
 
 @pytest.mark.parametrize("code", ["cs", "nb_NO"])
-def test_get_registered(code, uci_configs_init, infrastructure, ubusd_test):
+def test_get_registered(code, uci_configs_init, infrastructure, start_buses):
     res = infrastructure.process_message({
         "module": "data_collect",
         "action": "get_registered",
@@ -85,7 +85,7 @@ def test_get_registered(code, uci_configs_init, infrastructure, ubusd_test):
 @pytest.mark.only_backends(['openwrt'])
 @pytest.mark.parametrize("code", ["cs", "nb_NO"])
 def test_get_registered_openwrt(
-    cmdline_script_root, code, uci_configs_init, infrastructure, ubusd_test, register_cmd,
+    cmdline_script_root, code, uci_configs_init, infrastructure, start_buses, register_cmd,
     registration_code
 ):
     res = infrastructure.process_message({
@@ -102,7 +102,7 @@ def test_get_registered_openwrt(
     assert res["data"]["status"] == status
     assert status not in ["free", "foreign"] or "url" in res["data"]
 
-def test_get_registered_errors(uci_configs_init, infrastructure, ubusd_test):
+def test_get_registered_errors(uci_configs_init, infrastructure, start_buses):
     res = infrastructure.process_message({
         "module": "data_collect",
         "action": "get_registered",
@@ -123,7 +123,7 @@ def test_get_registered_errors(uci_configs_init, infrastructure, ubusd_test):
     assert "Incorrect input." in res["errors"][0]["description"]
 
 
-def test_get(uci_configs_init, infrastructure, ubusd_test):
+def test_get(uci_configs_init, infrastructure, start_buses):
     res = infrastructure.process_message({
         "module": "data_collect",
         "action": "get",
@@ -132,7 +132,7 @@ def test_get(uci_configs_init, infrastructure, ubusd_test):
     assert set(res["data"]) == {"agreed", "firewall_status", "ucollect_status"}
 
 
-def test_set(uci_configs_init, init_script_result, infrastructure, ubusd_test):
+def test_set(uci_configs_init, init_script_result, infrastructure, start_buses):
     def set_agreed(agreed):
         filters = [("data_collect", "set")]
         old_notifications = infrastructure.get_notifications(filters=filters)
@@ -174,7 +174,7 @@ def test_set(uci_configs_init, init_script_result, infrastructure, ubusd_test):
 
 @pytest.mark.only_backends(['openwrt'])
 def test_set_openwrt(
-    uci_configs_init, init_script_result, infrastructure, ubusd_test
+    uci_configs_init, init_script_result, infrastructure, start_buses
 ):
     res = infrastructure.process_message({
         "module": "data_collect",
@@ -211,7 +211,7 @@ def test_set_openwrt(
     check_service_result("ucollect", "stop")
 
 
-def test_get_honeypots(infrastructure, ubusd_test):
+def test_get_honeypots(infrastructure, start_buses):
     res = infrastructure.process_message({
         "module": "data_collect",
         "action": "get_honeypots",
@@ -220,7 +220,7 @@ def test_get_honeypots(infrastructure, ubusd_test):
     assert {"minipots", "log_credentials"} == set(res["data"].keys())
 
 
-def test_set_honeypots(infrastructure, ubusd_test):
+def test_set_honeypots(infrastructure, init_script_result, start_buses):
     filters = [("data_collect", "set_honeypots")]
 
     def set_honeypots(result):
@@ -294,7 +294,7 @@ def test_set_honeypots(infrastructure, ubusd_test):
 
 @pytest.mark.only_backends(['openwrt'])
 def test_set_honeypots_service_restart(
-    uci_configs_init, init_script_result, infrastructure, ubusd_test
+    uci_configs_init, init_script_result, infrastructure, start_buses
 ):
     res = infrastructure.process_message({
         "module": "data_collect",
@@ -324,7 +324,7 @@ def test_set_honeypots_service_restart(
 @pytest.mark.only_backends(['openwrt'])
 def test_set_agreed_uci(
     uci_configs_init, lock_backend, init_script_result, infrastructure,
-    ubusd_test
+    start_buses
 ):
     uci = get_uci_module(lock_backend)
 
@@ -342,7 +342,7 @@ def test_set_agreed_uci(
         u'kind': u'reply',
         u'module': u'data_collect'
     }
-    with uci.UciBackend() as backend:
+    with uci.UciBackend(UCI_CONFIG_DIR_PATH) as backend:
         data = backend.read()
 
     assert uci.parse_bool(uci.get_option_named(data, "foris", "eula", "agreed_collect", "0"))
@@ -362,7 +362,7 @@ def test_set_agreed_uci(
         u'module': u'data_collect'
     }
 
-    with uci.UciBackend() as backend:
+    with uci.UciBackend(UCI_CONFIG_DIR_PATH) as backend:
         data = backend.read()
 
     assert not uci.parse_bool(uci.get_option_named(data, "foris", "eula", "agreed_collect", "0"))
