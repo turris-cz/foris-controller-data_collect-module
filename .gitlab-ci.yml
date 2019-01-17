@@ -13,11 +13,6 @@ stages:
 
     - python setup.py test --addopts="--backend openwrt --backend mock"
 
-test_python2:
-  image: registry.labs.nic.cz/turris/foris-ci/python2
-  stage: test
-  <<: *run_script
-
 test_python3:
   image: registry.labs.nic.cz/turris/foris-ci/python3
   stage: test
