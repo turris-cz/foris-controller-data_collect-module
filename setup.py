@@ -56,7 +56,9 @@ setup(
     tests_require=[
         'pytest',
         'foris-controller-testtools',
-        'foris-client'
+        'foris-client',
+        'ubus',
+        'paho-mqtt',
     ],
     dependency_links=[
         "git+https://gitlab.labs.nic.cz/turris/foris-controller-testtools.git#egg=foris-controller-testtools",
