@@ -1,6 +1,6 @@
 #
 # foris-controller-data_collect-module
-# Copyright (C) 2018 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
+# Copyright (C) 2018-2020 CZ.NIC, z.s.p.o. (http://www.nic.cz/)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ setup(
     name='foris-controller-data_collect-module',
     version=__version__,
     author='CZ.NIC, z.s.p.o. (http://www.nic.cz/)',
-    author_email='stepan.henek@nic.cz',
+    author_email='packaging@turris.cz',
     packages=[
         'foris_controller_data_collect_module',
         'foris_controller_backends',
@@ -48,7 +48,7 @@ setup(
     description=DESCRIPTION,
     long_description=open('README.rst').read(),
     install_requires=[
-        "foris-controller @ git+https://gitlab.labs.nic.cz/turris/foris-controller/foris-controller.git#egg=foris-controller",
+        "foris-controller @ git+https://gitlab.nic.cz/turris/foris-controller/foris-controller.git#egg=foris-controller",
     ],
     setup_requires=[
         'pytest-runner',
@@ -61,8 +61,8 @@ setup(
         'paho-mqtt',
     ],
     dependency_links=[
-        "git+https://gitlab.labs.nic.cz/turris/foris-controller/foris-controller-testtools.git#egg=foris-controller-testtools",
-        "git+https://gitlab.labs.nic.cz/turris/foris-controller/foris-client.git#egg=foris-client",
+        "git+https://gitlab.nic.cz/turris/foris-controller/foris-controller-testtools.git#egg=foris-controller-testtools",
+        "git+https://gitlab.nic.cz/turris/foris-controller/foris-client.git#egg=foris-client",
     ],
     include_package_data=True,
     zip_safe=False,
